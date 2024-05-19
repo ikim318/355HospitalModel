@@ -1,0 +1,12 @@
+ED_Arrive	Register	Triage	Consultation	ED_Leave				
+ED_Arrive	Triage	Consultation	ED_Leave					
+ED_Arrive	Consultation	ED_Leave						
+ED_Arrive	Register	Triage	Consultation	Test	Second_Consultation	ED_Leave		
+ED_Arrive	Triage	Consultation	Test	Second_Consultation	ED_Leave			
+ED_Arrive	Consultation	Test	Second_Consultation	ED_Leave				
+ED_Arrive	Register	Triage	Consultation	ED_Leave	Ward_Arrive	Ward_Leave		
+ED_Arrive	Triage	Consultation	ED_Leave	Ward_Arrive	Ward_Leave			
+ED_Arrive	Consultation	ED_Leave	Ward_Arrive	Ward_Leave				
+ED_Arrive	Register	Triage	Consultation	Test	Second_Consultation	ED_Leave	Ward_Arrive	Ward_Leave
+ED_Arrive	Triage	Consultation	Test	Second_Consultation	ED_Leave	Ward_Arrive	Ward_Leave	
+ED_Arrive	Consultation	Test	Second_Consultation	ED_Leave	Ward_Arrive	Ward_Leave		

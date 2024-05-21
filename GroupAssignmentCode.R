@@ -1,11 +1,10 @@
 require(dplyr)
-setwd("C:\\Users\\jorda\\Coding\\Java\\ENGSCI355\\hospital_sim") # Change this for your machine
+setwd("C:\\Users\\jorda\\Coding\\Java\\ENGSCI355\\hospital_sim")
 
 # Important files to read
-# complete_model.rep
-# complete-model-patient-event-logger .txt
-# complete_model-PatientTransit.orderly-event-logger .txt
-# These should all be stored in the same directory as your R file
+# complete_model.rep?
+# complete-model-patient-event-logger
+# complete_model-PatientTransit.orderly-event-logger
 
 # Performance Targets
 # Arrival time to discharge/finish being admitted to ward time -> <6hrs for 95% of patients
@@ -14,23 +13,33 @@ setwd("C:\\Users\\jorda\\Coding\\Java\\ENGSCI355\\hospital_sim") # Change this f
 # time between needing to be obvserved and starting observation in wards, should be <15 mins 95% of the time.
 # Time waiting for test - < 5 mins on avg.
 
+
+# NOTE: IF YOU GET AN ERROR incomplete final line found by readTableHeader on 'complete_model-PatientTransit.orderly-event-logger.log',
+# go into the log file (i.e. in notepad) and add a tab at the very end
+#
+
 nullStrings = c("this.SimTime/1[h]", "Scenario", "Replication", "this.obj", "Event", "EventTime")
 patientData = read.table("complete_model-patient-event-logger.log", sep="\t",
                      col.names=c("SimTime", "Scenario",
                                  "Replication", "Object", "Event", "EventTime"),
                      skip=15, na.strings=nullStrings, skipNul=TRUE)
+orderlyData = read.table("complete_model-PatientTransit.orderly-event-logger.log", sep="\t",
+                         col.names=c("SimTime", "Scenario", "Replication", "Object", "Event", "EventTime"),
+                         skip=15, na.strings=nullStrings, skipNul=TRUE)
 
-# Arrival time to discharge/finish
+# Arrival time to discharge/finish - Jordan
 
-# Time between needing to be observed and starting observation - ED
+# Time between needing to be observed and starting observation in ED - Claire
 
 # Request Transit and start being picked up (orderly stuff)
 
-# Time between needing to be observed and starting observation - Ward
+# Time between needing to be observed and starting observation in Ward
 
-# Time Waiting for Test
+# Time Waiting for Test - Jordan and Michael did in the lab
 test_begin_start <- patientData[patientData$Event == "Wards.wait-for-test",]
 test_begin_end <- patientData[patientData$Event == "Wards.perform-test",]
 test_duration <- test_begin_end$EventTime - test_begin_start$EventTime
 minutes <- t.test(test_duration)$estimate * 60
 minutes
+
+

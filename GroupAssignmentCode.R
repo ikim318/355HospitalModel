@@ -1,5 +1,6 @@
 require(dplyr)
-setwd("C:\\Users\\jorda\\Coding\\Java\\ENGSCI355\\hospital_sim")
+#change to your wd
+setwd("E:\\ENGSCI355\\assignment")
 
 # Important files to read
 # complete_model.rep?
@@ -31,8 +32,11 @@ orderlyData = read.table("complete_model-PatientTransit.orderly-event-logger.log
 
 # Time between needing to be observed and starting observation in ED - Claire
 
-# Request Transit and start being picked up (orderly stuff)
-
+# Request Transit and start being picked up (orderly stuff) - Michael
+start_wait <- patientData[patientData$Event == "PatientTransit.wait-for-assignment",]
+pickup <- patientData[patientData$Event == "PatientTransit.pickup",]
+pickup_minutes <- t.test(pickup$EventTime-start_wait$EventTime)$estimate*60
+pickup_minutes
 # Time between needing to be observed and starting observation in Ward
 
 # Time Waiting for Test - Jordan and Michael did in the lab

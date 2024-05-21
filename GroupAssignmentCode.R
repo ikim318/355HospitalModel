@@ -5,6 +5,7 @@ setwd("C:\\Users\\jorda\\Coding\\Java\\ENGSCI355\\hospital_sim") # Change this f
 # complete_model.rep
 # complete-model-patient-event-logger .txt
 # complete_model-PatientTransit.orderly-event-logger .txt
+# These should all be stored in the same directory as your R file
 
 # Performance Targets
 # Arrival time to discharge/finish being admitted to ward time -> <6hrs for 95% of patients

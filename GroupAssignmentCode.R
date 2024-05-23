@@ -29,15 +29,46 @@ orderlyData = read.table("complete_model-PatientTransit.orderly-event-logger.log
                          skip=15, na.strings=nullStrings, skipNul=TRUE)
 
 # Arrival time to discharge/finish - Jordan
+arrival_time<-patientData%>%
+  group_by(Object)%>%
+  arrange(EventTime)%>%
+  arrange(Replication)%>%
+  arrange(Object)%>%
+  filter(row_number()==1)
+
+Leave_time<-patientData%>%
+  filter(patientData$Event=="patient-leave"|patientData$Event=='Wards.ward-stay')
+leave_index<-Leave_time%>%
+  group_by(Object)%>%
+  arrange(Replication)%>%
+  arrange(Object)%>%
+  filter(row_number()==1)
+  
+
 
 # Time between needing to be observed and starting observation in ED - Claire
+newdataframe<-patientData%>%
+  mutate(next_eventname=lag(Event,1))
+indicies3<-which(newdataframe$Event == "ED.observation" & (newdataframe$next_eventname == "ED.wait-for-tests"|newdataframe$next_eventname == "ED.wait-for-second-consultation"))
+indicies4<-indicies_EDobs-1
+ED_obs<-t.test((patientData$EventTime[indicies3]-patientData$EventTime[indicies4]-0.5)*60)$estimate
+ED_obs
+
 
 # Request Transit and start being picked up (orderly stuff) - Michael
 start_wait <- patientData[patientData$Event == "PatientTransit.wait-for-assignment",]
 pickup <- patientData[patientData$Event == "PatientTransit.pickup",]
 pickup_minutes <- t.test(pickup$EventTime-start_wait$EventTime)$estimate*60
 pickup_minutes
+
 # Time between needing to be observed and starting observation in Ward
+newdataframe<-patientData%>%
+  mutate(next_eventname=lag(Event,1))
+indicies<-which(newdataframe$Event == "Wards.observation" & newdataframe$next_eventname == "Wards.ward-stay")
+
+indicies2<-indicies-1
+ward_obs<-quantile((patientData$EventTime[indicies]-patientData$EventTime[indicies2]-2)*60,0.9)
+ward_obs
 
 # Time Waiting for Test - Jordan and Michael did in the lab
 test_begin_start <- patientData[patientData$Event == "Wards.wait-for-test",]

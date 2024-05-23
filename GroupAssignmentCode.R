@@ -57,7 +57,7 @@ percentile1
 
 # Time between needing to be observed and starting observation in ED - Claire
 newdataframe <- patientData %>%
-  mutate(next_eventname=lead(Event,1))
+  mutate(next_eventname=lag(Event,1))
 
 indicies_EDobs <- which(newdataframe$Event == "ED.observation" &
                         (newdataframe$next_eventname == "ED.wait-for-tests" |

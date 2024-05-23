@@ -29,23 +29,30 @@ orderlyData = read.table("complete_model-PatientTransit.orderly-event-logger.log
                          skip=15, na.strings=nullStrings, skipNul=TRUE)
 
 # Arrival time to discharge/finish - Jordan
-arrival_time<-patientData%>%
-  group_by(Object)%>%
-  arrange(EventTime)%>%
-  arrange(Replication)%>%
-  arrange(Object)%>%
-  filter(row_number()==1)
-arrival_time<-head(arrival_time,-1)
-Leave_time<-patientData%>%
-  filter(patientData$Event=="patient-leave"|patientData$Event=='Wards.ward-stay')
-leave_index<-Leave_time%>%
-  group_by(Object)%>%
-  arrange(Replication)%>%
-  arrange(Object)%>%
-  filter(row_number()==1)
+patientData1 <- patientData
+arrival_time <-  patientData1 %>% group_by(Scenario, Replication, Object) %>% slice(1) %>% ungroup() %>% na.omit()
+leave_time <- patientData1 %>% group_by(Scenario, Replication, Object) %>% filter(Event == "Wards.ward-stay" | Event =="patient-leave") %>% slice(1) %>% ungroup() %>% na.omit()
+time_to_discharge_or_finish = leave_time$EventTime - arrival_time$EventTime
+percentile1 = quantile(time_to_discharge_or_finish, probs=0.95)
+percentile1
+# 5.634617
+# arrival_time<-patientData%>%
+#   group_by(Object)%>%
+#   arrange(EventTime)%>%
+#   arrange(Replication)%>%
+#   arrange(Object)%>%
+#   filter(row_number()==1)
+# arrival_time<-head(arrival_time,-1)
+# Leave_time<-patientData%>%
+#   filter(patientData$Event=="patient-leave"|patientData$Event=='Wards.ward-stay')
+# leave_index<-Leave_time%>%
+#   group_by(Object)%>%
+#   arrange(Replication)%>%
+#   arrange(Object)%>%
+#   filter(row_number()==1)
 
-timeinsys=quantile(leave_index$EventTime-arrival_time$EventTime,0.9)
-timeinsys
+# timeinsys=quantile(leave_index$EventTime-arrival_time$EventTime,0.9)
+# timeinsys
 
 
 # Time between needing to be observed and starting observation in ED - Claire

@@ -35,7 +35,7 @@ arrival_time<-patientData%>%
   arrange(Replication)%>%
   arrange(Object)%>%
   filter(row_number()==1)
-
+arrival_time<-head(arrival_time,-1)
 Leave_time<-patientData%>%
   filter(patientData$Event=="patient-leave"|patientData$Event=='Wards.ward-stay')
 leave_index<-Leave_time%>%
@@ -43,7 +43,9 @@ leave_index<-Leave_time%>%
   arrange(Replication)%>%
   arrange(Object)%>%
   filter(row_number()==1)
-  
+
+timeinsys=quantile(leave_index$EventTime-arrival_time$EventTime,0.9)
+timeinsys
 
 
 # Time between needing to be observed and starting observation in ED - Claire

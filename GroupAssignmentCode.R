@@ -47,11 +47,16 @@ leave_index<-Leave_time%>%
 
 
 # Time between needing to be observed and starting observation in ED - Claire
-newdataframe<-patientData%>%
-  mutate(next_eventname=lag(Event,1))
-indicies3<-which(newdataframe$Event == "ED.observation" & (newdataframe$next_eventname == "ED.wait-for-tests"|newdataframe$next_eventname == "ED.wait-for-second-consultation"))
-indicies4<-indicies_EDobs-1
-ED_obs<-t.test((patientData$EventTime[indicies3]-patientData$EventTime[indicies4]-0.5)*60)$estimate
+newdataframe <- patientData %>%
+  mutate(next_eventname=lead(Event,1))
+
+indicies_EDobs <- which(newdataframe$Event == "ED.observation" &
+                        (newdataframe$next_eventname == "ED.wait-for-tests" |
+                         newdataframe$next_eventname == "ED.wait-for-second-consultation" |
+                         newdataframe$next_eventname == "ED.wait-for-consultation" ))
+
+indicies_EDEvent <- indicies_EDobs-1
+ED_obs<-t.test((patientData$EventTime[indicies_EDobs]-patientData$EventTime[indicies_EDEvent]-0.5)*60)$estimate
 ED_obs
 
 

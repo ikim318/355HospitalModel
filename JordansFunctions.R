@@ -25,7 +25,7 @@ orderlyData = read.table("complete_model-PatientTransit.orderly-event-logger.log
                          col.names=c("SimTime", "Scenario", "Replication", "Object", "Event", "EventTime"),
                          skip=15, na.strings=nullStrings, skipNul=TRUE)
 
-# Arrival time to discharge/finish - Jordan
+# Arrival time to discharge/finish
 arrival_time <-  patientData %>% group_by(Scenario, Replication, Object) %>% slice(1) %>% ungroup() %>% na.omit()
 leave_time <- patientData %>% group_by(Scenario, Replication, Object) %>% filter(Event == "Wards.ward-stay" | Event =="patient-leave") %>% slice(1) %>% ungroup() %>% na.omit()
 time_to_discharge_or_finish = leave_time$EventTime - arrival_time$EventTime
@@ -33,7 +33,7 @@ percentile1 = quantile(time_to_discharge_or_finish, probs=0.95)
 percentile1
 # 5.634617
 
-# Time between needing to be observed and starting observation in ED - Claire 54.84s?
+# Time between needing to be observed and starting observation in ED
 
 # Wait For Consultation
 EDObservationTimes1 <- patientData %>% group_by(Scenario, Replication, Object)  %>% filter((Event == "ED.wait-for-consultation" & lead(Event) == "ED.observation") | (Event == "ED.observation" & lag(Event) == "ED.wait-for-consultation"))  %>% mutate(WaitingTimes = ifelse(Event == "ED.wait-for-consultation", (lead(EventTime) - EventTime - 0.5) * 60,-1)) %>%  filter(Event == "ED.wait-for-consultation") %>% ungroup()
@@ -48,7 +48,7 @@ average2
 # 54.84244
 
 
-# Request Transit and start being picked up (orderly stuff) # avg 12.8 (<20)
+# Request Transit and start being picked up (orderly stuff)
 request_transit_times <- patientData[patientData$Event == "PatientTransit.wait-for-assignment",]
 pickup_times <- patientData[patientData$Event =="PatientTransit.pickup",]
 waiting_time <- pickup_times$EventTime - request_transit_times$EventTime
@@ -56,15 +56,13 @@ average3 <- t.test(waiting_time)$estimate * 60
 average3
 # 9.594097
 
-# Time between needing to be observed and starting observation in Ward 12.35?. Should be less than  15mins 95% of the time.
-
-# Don't take out the 0's: 12.35
+# Time between needing to be observed and starting observation in Ward
 wardObservationTimes <- patientData %>% group_by(Scenario, Replication, Object)  %>% filter((Event == "Wards.ward-stay" & lead(Event) == "Wards.observation") | (Event == "Wards.observation" & lag(Event) == "Wards.ward-stay"))  %>% mutate(WaitingTimes = ifelse(Event == "Wards.ward-stay", (lead(EventTime) - EventTime - 2) * 60,-1)) %>%  filter(Event == "Wards.ward-stay") %>% ungroup()
 percentile4 = quantile(wardObservationTimes$WaitingTimes, probs=0.95, na.rm=TRUE)
 percentile4
 # 12.35349
 
-# Time Waiting for Test - Jordan and Michael did in the lab
+# Time Waiting for Test
 test_begin_start <- patientData[patientData$Event == "Wards.wait-for-test",]
 test_begin_end <- patientData[patientData$Event == "Wards.perform-test",]
 test_duration <- test_begin_end$EventTime - test_begin_start$EventTime

@@ -24,6 +24,8 @@ patientData = read.table("complete_model-patient-event-logger.log", sep="\t",
 orderlyData = read.table("complete_model-PatientTransit.orderly-event-logger.log", sep="\t",
                          col.names=c("SimTime", "Scenario", "Replication", "Object", "Event", "EventTime"),
                          skip=15, na.strings=nullStrings, skipNul=TRUE)
+# Take off the first 100,000 values for warmup time
+patientData <- patientData[100000:nrow(patientData),]
 
 # Arrival time to discharge/finish - Jordan
 arrival_time <-  patientData %>% group_by(Scenario, Replication, Object) %>% slice(1) %>% ungroup() %>% na.omit()
@@ -32,6 +34,9 @@ time_to_discharge_or_finish = leave_time$EventTime - arrival_time$EventTime
 percentile1 = quantile(time_to_discharge_or_finish, probs=0.95)
 percentile1
 # 5.634617
+
+# plot(leave_time$SimTime, time_to_discharge_or_finish, type = "l", col = "blue", lwd = 2, xlab = "Simulation Time", ylab = "Time in ED", main = "Time spent in the ED by a patient against simulation running time")
+
 
 # Time between needing to be observed and starting observation in ED
 
@@ -74,3 +79,9 @@ test_duration <- test_begin_end$EventTime - test_begin_start$EventTime
 average5 <- t.test(test_duration)$estimate * 60
 average5
 # 6.227792
+
+print(percentile1)
+print(average2)
+print(average3)
+print(percentile4)
+print(average5)

@@ -36,19 +36,19 @@ percentile1
 # Time between needing to be observed and starting observation in ED
 
 # Wait For Consultation
-EDObservationTimes1 <- patientData %>% group_by(Scenario, Replication, Object)  %>% filter((Event == "ED.wait-for-consultation" & lead(Event) == "ED.observation") | (Event == "ED.observation" & lag(Event) == "ED.wait-for-consultation"))  %>% mutate(WaitingTimes = ifelse(Event == "ED.wait-for-consultation", (lead(EventTime) - EventTime - 0.5) * 60,-1)) %>%  filter(Event == "ED.wait-for-consultation" & WaitingTimes > -1e5) %>% ungroup()
+EDObservationTimes1 <- patientData %>% group_by(Scenario, Replication, Object)  %>% filter((Event == "ED.wait-for-consultation" & lead(Event) == "ED.observation") | (Event == "ED.observation" & lag(Event) == "ED.wait-for-consultation"))  %>% mutate(WaitingTimes = ifelse(Event == "ED.wait-for-consultation", (lead(EventTime) - EventTime - 0.5) * 60,-1)) %>%  filter(Event == "ED.wait-for-consultation") %>% mutate(WaitingTimes = ifelse(WaitingTimes > 0, WaitingTimes, 0)) %>% ungroup()
 # Wait For Test Results
-EDObservationTimes2 <- patientData %>% group_by(Scenario, Replication, Object)  %>% filter((Event == "ED.wait-for-tests" & lead(Event) == "ED.observation") | (Event == "ED.observation" & lag(Event) == "ED.wait-for-tests"))  %>% mutate(WaitingTimes = ifelse(Event == "ED.wait-for-tests", (lead(EventTime) - EventTime - 0.5) * 60,-1)) %>%  filter(Event == "ED.wait-for-tests" & WaitingTimes > -1e5) %>% ungroup()
+EDObservationTimes2 <- patientData %>% group_by(Scenario, Replication, Object)  %>% filter((Event == "ED.wait-for-tests" & lead(Event) == "ED.observation") | (Event == "ED.observation" & lag(Event) == "ED.wait-for-tests"))  %>% mutate(WaitingTimes = ifelse(Event == "ED.wait-for-tests", (lead(EventTime) - EventTime - 0.5) * 60,-1)) %>%  filter(Event == "ED.wait-for-tests") %>% mutate(WaitingTimes = ifelse(WaitingTimes > 0, WaitingTimes, 0)) %>% ungroup()
 # Wait For Second Consultation
-EDObservationTimes3 <- patientData %>% group_by(Scenario, Replication, Object)  %>% filter((Event == "ED.wait-for-second-consultation" & lead(Event) == "ED.observation" & lag(Event == "ED.observation")) | (Event == "ED.observation" & lag(Event) == "ED.wait-for-second-consultation" & lag(Event, n=2) == "ED.observation"))  %>% mutate(WaitingTimes = ifelse(Event == "ED.wait-for-second-consultation", (lead(EventTime) - EventTime - 0.5) * 60,-1)) %>%  filter(Event == "ED.wait-for-second-consultation" & WaitingTimes > -1e5) %>% ungroup()
+EDObservationTimes3 <- patientData %>% group_by(Scenario, Replication, Object)  %>% filter((Event == "ED.wait-for-second-consultation" & lead(Event) == "ED.observation" & lag(Event == "ED.observation")) | (Event == "ED.observation" & lag(Event) == "ED.wait-for-second-consultation" & lag(Event, n=2) == "ED.observation"))  %>% mutate(WaitingTimes = ifelse(Event == "ED.wait-for-second-consultation", (lead(EventTime) - EventTime - 0.5) * 60,-1)) %>%  filter(Event == "ED.wait-for-second-consultation") %>% mutate(WaitingTimes = ifelse(WaitingTimes > 0, WaitingTimes, 0)) %>% ungroup()
 # Niche Case of Wait For Second Consultation where there are multiple wait events in between.
-EDObservationTimes4 <- patientData %>% group_by(Scenario, Replication, Object)  %>% filter((Event == "ED.wait-for-second-consultation" & lead(Event) == "ED.observation" & lag(Event == "ED.wait-for-tests")) | (Event == "ED.observation" & lag(Event) == "ED.wait-for-second-consultation" & lag(Event, n=2) == "ED.wait-for-tests"))  %>% mutate(WaitingTimes = ifelse(Event == "ED.wait-for-second-consultation", (lead(EventTime) - lag(EventTime) - 0.5) * 60,-1)) %>%  filter(Event == "ED.wait-for-second-consultation" & WaitingTimes > -1e5) %>% ungroup()
+EDObservationTimes4 <- patientData %>% group_by(Scenario, Replication, Object)  %>% filter((Event == "ED.wait-for-second-consultation" & lead(Event) == "ED.observation" & lag(Event == "ED.wait-for-tests")) | (Event == "ED.observation" & lag(Event) == "ED.wait-for-second-consultation" & lag(Event, n=2) == "ED.wait-for-tests"))  %>% mutate(WaitingTimes = ifelse(Event == "ED.wait-for-second-consultation", (lead(EventTime) - lag(EventTime) - 0.5) * 60,-1)) %>%  filter(Event == "ED.wait-for-second-consultation") %>% mutate(WaitingTimes = ifelse(WaitingTimes > 0, WaitingTimes, 0)) %>% ungroup()
 
 
 EDObservationTimes = rbind(EDObservationTimes1, EDObservationTimes2, EDObservationTimes3, EDObservationTimes4)
 average2 = mean(EDObservationTimes$WaitingTimes, na.rm=TRUE) * 60 # seconds
 average2
-# 56.74004
+# 56.80273
 
 
 # Request Transit and start being picked up

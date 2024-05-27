@@ -1,0 +1,91 @@
+require(dplyr)
+setwd("C:\\Users\\jorda\\Coding\\Java\\ENGSCI355\\hospital_sim")
+
+nullStrings = c("this.SimTime/1[h]", "Scenario", "Replication", "this.obj", "Event", "EventTime")
+patientEventData = read.table("complete_model-patient-event-logger.log", sep="\t",
+                         col.names=c("SimTime", "Scenario",
+                                     "Replication", "Object", "Event", "EventTime"),
+                         skip=15, na.strings=nullStrings, skipNul=TRUE)
+
+nullStrings2 = c("this.SimTime/1[h]", "this.obj", "[Simulation].ScenarioNumber", "[Simulation].ReplicationNumber", "this.obj.TriageCategory")
+patientEntityData = read.table("complete_model-patient-entity-logger.log", sep="\t",
+                         col.names=c("SimTime", "Object",
+                                     "Scenario", "Replication", "TriageCategory"),
+                         skip=15, na.strings=nullStrings2, skipNul=TRUE)
+
+# Take off the first 100,000 values for warmup time & first 4000 for entity data - is about the first 500 simtime hours (overkill).
+patientEventData <- patientEventData[100000:nrow(patientEventData),]
+patientEntityData <- patientEntityData[4000:nrow(patientEntityData),]
+
+
+
+patientEventData <- na.omit(patientEventData)
+patientEntityData <- na.omit(patientEntityData)
+patientEventData %>% group_by(Scenario, Replication, Object)
+patientEntityData %>% group_by(Scenario, Replication, Object)
+combinedData <- inner_join(patientEventData, patientEntityData)
+
+# Wait for Consultation
+consultationData <- combinedData %>% group_by(Scenario, Replication, Object) %>% filter(Event == "ED.wait-for-consultation" | Event == "ED.consultation") %>% mutate(WaitingTime = ifelse(row_number() == 1, last(EventTime) - first(EventTime), NA)) %>% na.omit() %>% ungroup()
+category1b <- consultationData %>% filter(consultationData$TriageCategory == 1)
+category2 <- consultationData %>% filter(consultationData$TriageCategory == 2)
+category3 <- consultationData %>% filter(consultationData$TriageCategory == 3)
+category4 <- consultationData %>% filter(consultationData$TriageCategory == 4)
+category5 <- consultationData %>% filter(consultationData$TriageCategory == 5)
+mean(category1b$WaitingTime) * 60 * 60
+mean(category2$WaitingTime) * 60 * 60
+mean(category3$WaitingTime) * 60 * 60
+mean(category4$WaitingTime) * 60 * 60
+mean(category5$WaitingTime) * 60 * 60
+
+# Orderly Assignment in Patient Transit
+assignmentData <- combinedData %>% group_by(Scenario, Replication, Object) %>% filter(Event == "PatientTransit.wait-for-assignment" | Event == "PatientTransit.pickup") %>% mutate(WaitingTime = ifelse(Event == "PatientTransit.wait-for-assignment", lead(EventTime) - EventTime, NA)) %>% na.omit() %>% ungroup()
+category1 <- assignmentData %>% filter(assignmentData$TriageCategory == 1)
+category2 <- assignmentData %>% filter(assignmentData$TriageCategory == 2)
+category3 <- assignmentData %>% filter(assignmentData$TriageCategory == 3)
+category4 <- assignmentData %>% filter(assignmentData$TriageCategory == 4)
+category5 <- assignmentData %>% filter(assignmentData$TriageCategory == 5)
+mean(category1$WaitingTime) * 60
+mean(category2$WaitingTime) * 60
+mean(category3$WaitingTime) * 60
+mean(category4$WaitingTime) * 60
+mean(category5$WaitingTime) * 60
+
+# Wait for Test
+testData <- combinedData %>% group_by(Scenario, Replication, Object) %>% filter(Event == "Wards.wait-for-test" | Event == "Wards.perform-test") %>% mutate(WaitingTime = ifelse(row_number() == 1, last(EventTime) - first(EventTime), NA)) %>% na.omit() %>% ungroup()
+category1 <- testData %>% filter(testData$TriageCategory == 1)
+category2 <- testData %>% filter(testData$TriageCategory == 2)
+category3 <- testData %>% filter(testData$TriageCategory == 3)
+category4 <- testData %>% filter(testData$TriageCategory == 4)
+category5 <- testData %>% filter(testData$TriageCategory == 5)
+mean(category1$WaitingTime) * 60
+mean(category2$WaitingTime) * 60
+mean(category3$WaitingTime) * 60
+mean(category4$WaitingTime) * 60
+mean(category5$WaitingTime) * 60
+
+# Wait for Second Consultation
+consultation2Data <- combinedData %>% group_by(Scenario, Replication, Object) %>% filter(Event == "ED.wait-for-second-consultation" | Event == "ED.second-consultation") %>% mutate(WaitingTime = ifelse(row_number() == 1, last(EventTime) - first(EventTime), NA)) %>% na.omit() %>% ungroup()
+category1 <- consultation2Data %>% filter(consultation2Data$TriageCategory == 1)
+category2 <- consultation2Data %>% filter(consultation2Data$TriageCategory == 2)
+category3 <- consultation2Data %>% filter(consultation2Data$TriageCategory == 3)
+category4 <- consultation2Data %>% filter(consultation2Data$TriageCategory == 4)
+category5 <- consultation2Data %>% filter(consultation2Data$TriageCategory == 5)
+mean(category1$WaitingTime) * 60 * 60
+mean(category2$WaitingTime) * 60 * 60
+mean(category3$WaitingTime) * 60 * 60
+mean(category4$WaitingTime) * 60 * 60
+mean(category5$WaitingTime) * 60 * 60
+
+# Wait for admission to ward
+admissionData <- combinedData %>% group_by(Scenario, Replication, Object) %>% filter(Event == "Wards.wait-for-admission" | Event == "Wards.admission") %>% mutate(WaitingTime = ifelse(row_number() == 1, last(EventTime) - first(EventTime), NA)) %>% na.omit() %>% ungroup()
+category1 <- admissionData %>% filter(admissionData$TriageCategory == 1)
+category2 <- admissionData %>% filter(admissionData$TriageCategory == 2)
+category3 <- admissionData %>% filter(admissionData$TriageCategory == 3)
+category4 <- admissionData %>% filter(admissionData$TriageCategory == 4)
+category5 <- admissionData %>% filter(admissionData$TriageCategory == 5)
+mean(category1$WaitingTime) * 60 * 60
+mean(category2$WaitingTime) * 60 * 60
+mean(category3$WaitingTime) * 60 * 60
+mean(category4$WaitingTime) * 60 * 60
+mean(category5$WaitingTime) * 60 * 60

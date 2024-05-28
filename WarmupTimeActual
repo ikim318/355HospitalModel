@@ -1,0 +1,54 @@
+# Code for determining warm up time.
+
+require(dplyr)
+setwd("C:\\Users\\jorda\\Coding\\Java\\ENGSCI355\\hospital_sim\\Backups")
+
+nullStrings = c("this.SimTime/1[h]", "Scenario", "Replication", "this.obj", "Event", "EventTime")
+patientData = read.table("complete_model-patient-event-logger-non-optimized-no-priority.log", sep="\t",
+                         col.names=c("SimTime", "Scenario",
+                                     "Replication", "Object", "Event", "EventTime"),
+                         skip=15, na.strings=nullStrings, skipNul=TRUE)
+
+# patientData = read.table("complete_model-patient-event-logger.log", sep="\t",
+#                          col.names=c("SimTime", "Scenario",
+#                                      "Replication", "Object", "Event", "EventTime"),
+#                          skip=15, na.strings=nullStrings, skipNul=TRUE)
+
+patientData$Object <- as.numeric(gsub("Patient", "", patientData$Object))
+
+arrival_time <-  patientData %>% group_by(Scenario, Replication, Object) %>% slice(1) %>% ungroup() %>% na.omit()
+leave_time <- patientData %>% group_by(Scenario, Replication, Object) %>% filter(Event == "Wards.ward-stay" | Event =="patient-leave") %>% slice(1) %>% ungroup() %>% na.omit()
+
+patientData <- arrival_time %>% mutate(StatisticTime = (leave_time$EventTime - arrival_time$EventTime)) %>% na.omit()
+patientData <- patientData[order(patientData$SimTime),]
+
+patientData <- patientData %>% filter(patientData$SimTime < 50)
+
+total_time = last(patientData$SimTime)
+NUMDAYS = 1
+
+
+# Initialize vectors to store means
+mean_x <- numeric(total_time %/% NUMDAYS)
+mean_y <- numeric(total_time %/% NUMDAYS)
+
+j = 0
+while( j < total_time ) {
+  batch <- patientData %>% filter (SimTime > j & SimTime < (j + NUMDAYS))
+  mean_x[j] <- j+NUMDAYS # Take Max
+  mean_y[j] <- mean(batch$StatisticTime, na.rm=TRUE)
+  j <- j + NUMDAYS;
+}
+
+
+# Create a data frame with the means
+means_df <- data.frame(mean_x = mean_x, mean_y = mean_y)
+means_df <- means_df %>% filter(mean_y > 0) %>% na.omit()
+means_df <- means_df[order(means_df$mean_x),]
+# Print the means data frame
+print("Means Data Frame:")
+print(means_df)
+  
+
+
+plot(means_df$mean_x, means_df$mean_y, type = "l", col = 1, xlab = "SimTime", ylab = "Average Time In ED", main = "Warmup Time")
